@@ -8,12 +8,14 @@ import {
   IconLock,
   IconLogout,
   IconReport,
+  IconSettings,
   IconSpark,
   IconTeam,
   IconUpload,
   LogoMark,
 } from "./icons";
 import { Chip } from "./ui";
+import SettingsModal from "./SettingsModal";
 
 const NAV: { route: Route; label: string; icon: (p: { className?: string }) => ReactNode; gated?: "upload" | "team" }[] = [
   { route: "dashboard", label: "Visão geral", icon: (p) => <IconDashboard {...p} /> },
@@ -34,8 +36,11 @@ const TITLES: Record<Route, { title: string; desc: string }> = {
 };
 
 export default function AppShell({ children }: { children: ReactNode }) {
-  const { route, setRoute, currentUser, logout, permissions, jobs } = useApp();
+  const { route, setRoute, currentUser, logout, permissions, jobs, ai, setSettingsOpen } = useApp();
   if (!currentUser) return null;
+
+  const engineLabel =
+    ai.mode === "openai" && ai.apiKey.trim() ? ai.model.trim() || "gpt-4o-mini" : "simulado";
 
   const initials = currentUser.name
     .split(" ")
@@ -117,6 +122,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="border-t border-pine-900 p-4">
+          <button
+            onClick={() => setSettingsOpen(true)}
+            title="Configurar motor de IA"
+            className="mb-2 flex w-full items-center justify-between rounded-lg border border-pine-800 bg-pine-900/50 px-3 py-2 text-[12px] font-medium text-pine-200 transition-colors hover:bg-pine-900 hover:text-paper cursor-pointer"
+          >
+            <span className="flex items-center gap-2">
+              <IconSettings className="h-4 w-4 text-pine-400" /> Motor de IA
+            </span>
+            <span className="font-mono text-[10.5px] text-lime-300">{engineLabel}</span>
+          </button>
           <div className="flex items-center gap-3 rounded-lg px-2 py-1.5">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-lime-400 font-display text-[13px] font-bold text-pine-950">
               {initials}
@@ -157,7 +172,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-2.5">
               <Chip tone="dark" className="hidden sm:inline-flex">
                 <IconSpark className="h-3 w-3" />
-                IA online
+                {ai.mode === "openai" && ai.apiKey.trim() ? `IA · ${engineLabel}` : "IA simulada"}
               </Chip>
               <Chip tone="neutral">{currentUser.company}</Chip>
             </div>
@@ -181,11 +196,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
         <footer className="border-t border-line px-5 py-4 sm:px-8">
           <p className="font-mono text-[10.5px] text-ink-mute">
-            Escuta · demo funcional — auth, papéis e análise simulados localmente, prontos para
-            Supabase Auth + Storage + Edge Functions
+            Escuta · demo funcional — auth e papéis locais (prontos p/ Supabase) · IA simulada com
+            modo real opcional via chave OpenAI-compatível
           </p>
         </footer>
       </div>
+
+      <SettingsModal />
     </div>
   );
 }

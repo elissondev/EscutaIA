@@ -26,6 +26,8 @@ import type {
   Toast,
   User,
 } from "./data";
+import { analyzeWithLLM, loadAiSettings, saveAiSettings } from "./ai";
+import type { AiSettings } from "./ai";
 
 const LS = {
   users: "escuta:v1:users",
@@ -63,7 +65,7 @@ interface AppContextValue {
   login: (email: string, password: string) => string | null;
   register: (name: string, email: string, company: string, password: string) => string | null;
   logout: () => void;
-  submitFiles: (entries: { name: string; sizeKB: number }[]) => void;
+  submitFiles: (entries: { name: string; sizeKB: number; file?: File | null }[]) => void;
   submitSamples: () => void;
   generateReport: (title: string, period: string, sections: string[]) => Report | null;
   deleteReport: (id: string) => void;
@@ -73,6 +75,10 @@ interface AppContextValue {
   toast: (kind: Toast["kind"], title: string, desc?: string) => void;
   dismissToast: (id: string) => void;
   permissions: { canUpload: boolean; canTeam: boolean; canReport: boolean };
+  ai: AiSettings;
+  setAi: (s: AiSettings) => void;
+  settingsOpen: boolean;
+  setSettingsOpen: (v: boolean) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -107,6 +113,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [route, setRoute] = useState<Route>("dashboard");
   const timers = useRef<number[]>([]);
+  const [ai, setAiState] = useState<AiSettings>(loadAiSettings);
+  const aiRef = useRef(ai);
+  useEffect(() => {
+    aiRef.current = ai;
+  }, [ai]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  /** ids de jobs já concluídos — evita dupla análise em re-renders */
+  const processedRef = useRef<Set<string>>(new Set());
+
+  const setAi = useCallback((s: AiSettings) => {
+    setAiState(s);
+    saveAiSettings(s);
+  }, []);
 
   useEffect(() => save(LS.users, users), [users]);
   useEffect(() => save(LS.session, sessionId), [sessionId]);
@@ -144,18 +163,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [hasJobs]);
 
   useEffect(() => {
-    const done = jobs.filter((j) => j.progress >= 100);
+    const done = jobs.filter((j) => j.progress >= 100 && !processedRef.current.has(j.id));
     if (done.length === 0) return;
+    done.forEach((j) => processedRef.current.add(j.id));
     setJobs((prev) => prev.filter((j) => j.progress < 100));
-    const convs = done.map(makeConversation);
-    setConversations((prev) => [...convs, ...prev]);
-    done.forEach((j) =>
-      toast("success", "Análise concluída", `${j.name} processado pela IA.`)
-    );
+
+    const s = aiRef.current;
+    const useLLM = s.mode === "openai" && s.apiKey.trim().length > 0;
+
+    done.forEach((j) => {
+      if (!useLLM) {
+        setConversations((prev) => [makeConversation(j), ...prev]);
+        toast("success", "Análise concluída", `${j.name} processado pelo motor local.`);
+        return;
+      }
+      toast("info", "Analisando com IA real", `${j.name} enviado ao modelo ${s.model}.`);
+      analyzeWithLLM({ kind: j.kind, name: j.name, sizeKB: j.sizeKB, file: j.file }, s)
+        .then((base) => {
+          const conv: Conversation = {
+            ...base,
+            id: uid(),
+            kind: j.kind,
+            sizeKB: j.sizeKB,
+            date: new Date().toISOString(),
+          };
+          setConversations((prev) => [conv, ...prev]);
+          toast("success", "Análise concluída", `${j.name} analisado por ${s.model}.`);
+        })
+        .catch(() => {
+          setConversations((prev) => [makeConversation(j), ...prev]);
+          toast("error", "IA externa indisponível", `${j.name} caiu para o motor local.`);
+        });
+    });
   }, [jobs, toast]);
 
   const submitFiles = useCallback(
-    (entries: { name: string; sizeKB: number }[]) => {
+    (entries: { name: string; sizeKB: number; file?: File | null }[]) => {
       if (entries.length === 0) return;
       const newJobs: AnalysisJob[] = entries.map((e) => ({
         id: uid(),
@@ -163,6 +206,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         kind: kindFromName(e.name),
         sizeKB: e.sizeKB,
         progress: 0,
+        file: e.file ?? null,
       }));
       setJobs((prev) => [...prev, ...newJobs]);
       toast(
@@ -383,6 +427,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     toast,
     dismissToast,
     permissions,
+    ai,
+    setAi,
+    settingsOpen,
+    setSettingsOpen,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
