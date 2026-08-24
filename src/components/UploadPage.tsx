@@ -3,7 +3,7 @@ import { useApp } from "../lib/store";
 import { KIND_META, STAGES, frictions } from "../lib/data";
 import type { AnalysisJob, Conversation } from "../lib/data";
 import { Btn, Card, Chip, EmptyState, KindIcon, LockedNote, ProgressBar, SectionHead, SentimentChip } from "./ui";
-import { IconArrowRight, IconCheck, IconLock, IconMic, IconUpload, IconWave } from "./icons";
+import { IconArrowRight, IconCheck, IconLock, IconMic, IconSettings, IconUpload, IconWave } from "./icons";
 
 function stageIndex(progress: number) {
   return Math.min(STAGES.length - 1, Math.floor((progress / 100) * STAGES.length));
@@ -87,9 +87,11 @@ function JobCard({ job, result }: { job: AnalysisJob; result: Conversation | und
 }
 
 export default function UploadPage() {
-  const { jobs, conversations, submitFiles, submitSamples, permissions, setRoute } = useApp();
+  const { jobs, conversations, submitFiles, submitSamples, permissions, setRoute, ai, setSettingsOpen } = useApp();
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const engineLabel =
+    ai.mode === "openai" && ai.apiKey.trim() ? ai.model.trim() || "gpt-4o-mini" : "simulado local";
 
   if (!permissions.canUpload) {
     return (
@@ -114,6 +116,7 @@ export default function UploadPage() {
       Array.from(files).map((f) => ({
         name: f.name,
         sizeKB: Math.max(1, Math.round(f.size / 1024)),
+        file: f,
       }))
     );
     if (inputRef.current) inputRef.current.value = "";
@@ -242,7 +245,16 @@ export default function UploadPage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-honey-500 animate-pulse-dot" />
                 processando
               </Chip>
-            ) : undefined
+            ) : (
+              <button
+                onClick={() => setSettingsOpen(true)}
+                title="Configurar motor de IA"
+                className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1 text-[11.5px] font-medium text-ink-soft transition-all duration-150 hover:-translate-y-0.5 hover:border-pine-300 hover:text-ink hover:shadow-lift cursor-pointer"
+              >
+                <IconSettings className="h-3.5 w-3.5 text-pine-500" />
+                Motor: <span className="font-mono text-pine-700">{engineLabel}</span>
+              </button>
+            )
           }
         />
         <div className="mt-4 space-y-3">

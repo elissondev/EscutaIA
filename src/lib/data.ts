@@ -36,6 +36,8 @@ export interface AnalysisJob {
   kind: FileKind;
   sizeKB: number;
   progress: number;
+  /** Arquivo original em memória (não persistido) — usado pelo Whisper na análise real. */
+  file?: File | null;
 }
 
 export interface FrictionPoint {

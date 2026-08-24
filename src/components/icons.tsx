@@ -245,6 +245,20 @@ export const IconArrowRight = (p: IconProps) => (
   </S>
 );
 
+export const IconSettings = (p: IconProps) => (
+  <S {...p}>
+    <path d="M4 7.5h8.5" />
+    <path d="M17.5 7.5H20" />
+    <path d="M4 12h2.5" />
+    <path d="M11.5 12H20" />
+    <path d="M4 16.5h8.5" />
+    <path d="M17.5 16.5H20" />
+    <circle cx="15" cy="7.5" r="2" />
+    <circle cx="9" cy="12" r="2" />
+    <circle cx="15" cy="16.5" r="2" />
+  </S>
+);
+
 export const IconMic = (p: IconProps) => (
   <S {...p}>
     <rect x="9" y="3.5" width="6" height="11" rx="3" />
