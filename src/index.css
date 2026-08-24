@@ -1,1 +1,143 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, sans-serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --color-paper: #f2f4ec;
+  --color-card: #fbfcf8;
+  --color-line: #e0e5d8;
+  --color-linesoft: #eaeee2;
+
+  --color-ink: #141b16;
+  --color-ink-soft: #3e4b42;
+  --color-ink-mute: #707d70;
+
+  --color-pine-50: #edf4ee;
+  --color-pine-100: #dcebe0;
+  --color-pine-200: #b9d7c2;
+  --color-pine-300: #8cbb9d;
+  --color-pine-400: #5d9a76;
+  --color-pine-500: #3c7d58;
+  --color-pine-600: #286545;
+  --color-pine-700: #1f5238;
+  --color-pine-800: #183f2c;
+  --color-pine-900: #122e21;
+  --color-pine-950: #0b1d14;
+
+  --color-lime-200: #e8f9a8;
+  --color-lime-300: #d8f47d;
+  --color-lime-400: #c9ef5f;
+  --color-lime-500: #b3d943;
+  --color-lime-600: #92b52a;
+
+  --color-coral-100: #fbe4dd;
+  --color-coral-300: #f19a83;
+  --color-coral-400: #ec7558;
+  --color-coral-500: #e4573d;
+  --color-coral-600: #c64328;
+  --color-coral-700: #a33620;
+
+  --color-honey-100: #faeed2;
+  --color-honey-400: #e8a73c;
+  --color-honey-500: #d98f1f;
+  --color-honey-600: #b87414;
+  --color-honey-700: #8f5a0e;
+
+  --animate-fade-up: fadeUp 0.55s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+  --animate-fade-in: fadeIn 0.4s ease both;
+  --animate-slide-in: slideIn 0.4s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+  --animate-eq: eq 1.15s ease-in-out infinite;
+  --animate-stripes: stripes 0.9s linear infinite;
+  --animate-pulse-dot: pulseDot 1.9s ease-in-out infinite;
+  --animate-spin-slow: spin 2.4s linear infinite;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+@keyframes stripes {
+  from { background-position: 0 0; }
+  to { background-position: 24px 0; }
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.8); }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background: var(--color-lime-400);
+    color: var(--color-pine-950);
+  }
+  input, select, textarea, button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #c8d0be;
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: #a8b39c; background-clip: content-box; }
+}
+
+@layer utilities {
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  .bg-dots {
+    background-image: radial-gradient(rgba(20, 27, 22, 0.09) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .bg-grid-dark {
+    background-image:
+      linear-gradient(rgba(201, 239, 95, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201, 239, 95, 0.05) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+  .glow-lime {
+    background: radial-gradient(closest-side, rgba(201, 239, 95, 0.16), transparent 70%);
+  }
+  .glow-pine {
+    background: radial-gradient(closest-side, rgba(60, 125, 88, 0.13), transparent 72%);
+  }
+  .stripes-bar {
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.28) 25%, transparent 25%,
+      transparent 50%, rgba(255, 255, 255, 0.28) 50%,
+      rgba(255, 255, 255, 0.28) 75%, transparent 75%
+    );
+    background-size: 24px 24px;
+    animation: stripes 0.9s linear infinite;
+  }
+  .shadow-lift {
+    box-shadow: 0 1px 2px rgba(20, 27, 22, 0.05), 0 10px 28px -14px rgba(20, 27, 22, 0.22);
+  }
+  .shadow-lift-lg {
+    box-shadow: 0 2px 6px rgba(11, 29, 20, 0.16), 0 24px 60px -24px rgba(11, 29, 20, 0.55);
+  }
+}
