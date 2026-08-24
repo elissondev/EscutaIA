@@ -35,7 +35,7 @@ const eqBars = Array.from({ length: 26 }, (_, i) => ({
   d: (i % 7) * 0.13,
 }));
 
-export default function AuthScreen() {
+export default function AuthScreen({ onBack }: { onBack?: () => void }) {
   const { login, register } = useApp();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -177,6 +177,14 @@ export default function AuthScreen() {
         <div className="glow-pine pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px]" />
 
         <div className="relative w-full max-w-[420px] animate-fade-up">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mb-5 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-pine-600 transition-colors hover:bg-pine-50 hover:text-pine-800 cursor-pointer"
+            >
+              ← Voltar ao site
+            </button>
+          )}
           <div className="mb-7 flex items-center gap-2.5 lg:hidden">
             <LogoMark className="h-8 w-8 text-pine-800" />
             <p className="font-display text-xl font-bold tracking-tight text-ink">Escuta</p>
