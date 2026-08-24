@@ -52,6 +52,16 @@
   --animate-stripes: stripes 0.9s linear infinite;
   --animate-pulse-dot: pulseDot 1.9s ease-in-out infinite;
   --animate-spin-slow: spin 2.4s linear infinite;
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-caret: caret 1s steps(1) infinite;
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+@keyframes caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 @keyframes fadeUp {
@@ -83,6 +93,7 @@
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
   }
   body {
     background-color: var(--color-paper);
